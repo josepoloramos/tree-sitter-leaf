@@ -1,7 +1,6 @@
 /**
- * @file HTML grammar for tree-sitter
- * @author Max Brunsfeld <maxbrunsfeld@gmail.com>
- * @author Amaan Qureshi <amaanq12@gmail.com>
+ * @file Tree Sitter Grammar for Vapor leaf
+ * @author Jose Polo Ramos <jose@jpoloram.com>
  * @license MIT
  */
 
@@ -9,133 +8,61 @@
 // @ts-check
 
 module.exports = grammar({
-  name: 'html',
+  name: "leaf",
 
-  extras: $ => [
-    $.comment,
-    /\s+/,
-  ],
+  extras: ($) => [$.comment, /\s+/],
 
-  externals: $ => [
-    $._start_tag_name,
-    $._script_start_tag_name,
-    $._style_start_tag_name,
-    $._end_tag_name,
-    $.erroneous_end_tag_name,
-    '/>',
-    $._implicit_end_tag,
-    $.raw_text,
-    $.comment,
-  ],
+  externals: ($) => [$._start_tag_name, $._script_start_tag_name, $._style_start_tag_name, $._end_tag_name, $.erroneous_end_tag_name, "/>", $._implicit_end_tag, $.raw_text, $.comment],
 
   rules: {
-    document: $ => repeat($._node),
+    document: ($) => repeat($._node),
 
-    doctype: $ => seq(
-      '<!',
-      alias($._doctype, 'doctype'),
-      /[^>]+/,
-      '>',
-    ),
+    doctype: ($) => seq("<!", alias($._doctype, "doctype"), /[^>]+/, ">"),
 
-    _doctype: _ => /[Dd][Oo][Cc][Tt][Yy][Pp][Ee]/,
-
-    _node: $ => choice(
-      $.doctype,
-      $.entity,
-      $.text,
-      $.element,
-      $.script_element,
-      $.style_element,
-      $.erroneous_end_tag,
-    ),
-
-    element: $ => choice(
+    leaf_expression: ($) =>
       seq(
-        $.start_tag,
-        repeat($._node),
-        choice($.end_tag, $._implicit_end_tag),
+        "#(",
+        /[^)]+/, // Leaf expressions like #(user.name)
+        ")",
       ),
-      $.self_closing_tag,
-    ),
 
-    script_element: $ => seq(
-      alias($.script_start_tag, $.start_tag),
-      optional($.raw_text),
-      $.end_tag,
-    ),
+    leaf_control: ($) => seq("#", choice(seq("if", /[^\n]+/), seq("for", /[^\n]+/), "else", "end", seq("embed", /\([^)]+\)/))),
 
-    style_element: $ => seq(
-      alias($.style_start_tag, $.start_tag),
-      optional($.raw_text),
-      $.end_tag,
-    ),
+    _doctype: (_) => /[Dd][Oo][Cc][Tt][Yy][Pp][Ee]/,
 
-    start_tag: $ => seq(
-      '<',
-      alias($._start_tag_name, $.tag_name),
-      repeat($.attribute),
-      '>',
-    ),
+    _node: ($) => choice($.doctype, $.entity, $.text, $.element, $.script_element, $.style_element, $.erroneous_end_tag, $.leaf_expression, $.leaf_control),
 
-    script_start_tag: $ => seq(
-      '<',
-      alias($._script_start_tag_name, $.tag_name),
-      repeat($.attribute),
-      '>',
-    ),
+    element: ($) => choice(seq($.start_tag, repeat($._node), choice($.end_tag, $._implicit_end_tag)), $.self_closing_tag),
 
-    style_start_tag: $ => seq(
-      '<',
-      alias($._style_start_tag_name, $.tag_name),
-      repeat($.attribute),
-      '>',
-    ),
+    script_element: ($) => seq(alias($.script_start_tag, $.start_tag), optional($.raw_text), $.end_tag),
 
-    self_closing_tag: $ => seq(
-      '<',
-      alias($._start_tag_name, $.tag_name),
-      repeat($.attribute),
-      '/>',
-    ),
+    style_element: ($) => seq(alias($.style_start_tag, $.start_tag), optional($.raw_text), $.end_tag),
 
-    end_tag: $ => seq(
-      '</',
-      alias($._end_tag_name, $.tag_name),
-      '>',
-    ),
+    start_tag: ($) => seq("<", alias($._start_tag_name, $.tag_name), repeat($.attribute), ">"),
 
-    erroneous_end_tag: $ => seq(
-      '</',
-      $.erroneous_end_tag_name,
-      '>',
-    ),
+    script_start_tag: ($) => seq("<", alias($._script_start_tag_name, $.tag_name), repeat($.attribute), ">"),
 
-    attribute: $ => seq(
-      $.attribute_name,
-      optional(seq(
-        '=',
-        choice(
-          $.attribute_value,
-          $.quoted_attribute_value,
-        ),
-      )),
-    ),
+    style_start_tag: ($) => seq("<", alias($._style_start_tag_name, $.tag_name), repeat($.attribute), ">"),
 
-    attribute_name: _ => /[^<>"'/=\s]+/,
+    self_closing_tag: ($) => seq("<", alias($._start_tag_name, $.tag_name), repeat($.attribute), "/>"),
 
-    attribute_value: _ => /[^<>"'=\s]+/,
+    end_tag: ($) => seq("</", alias($._end_tag_name, $.tag_name), ">"),
+
+    erroneous_end_tag: ($) => seq("</", $.erroneous_end_tag_name, ">"),
+
+    attribute: ($) => seq($.attribute_name, optional(seq("=", choice($.attribute_value, $.quoted_attribute_value)))),
+
+    attribute_name: (_) => /[^<>"'/=\s]+/,
+
+    attribute_value: (_) => /[^<>"'=\s]+/,
 
     // An entity can be named, numeric (decimal), or numeric (hexacecimal). The
     // longest entity name is 29 characters long, and the HTML spec says that
     // no more will ever be added.
-    entity: _ => /&(#([xX][0-9a-fA-F]{1,6}|[0-9]{1,5})|[A-Za-z]{1,30});?/,
+    entity: (_) => /&(#([xX][0-9a-fA-F]{1,6}|[0-9]{1,5})|[A-Za-z]{1,30});?/,
 
-    quoted_attribute_value: $ => choice(
-      seq('\'', optional(alias(/[^']+/, $.attribute_value)), '\''),
-      seq('"', optional(alias(/[^"]+/, $.attribute_value)), '"'),
-    ),
+    quoted_attribute_value: ($) => choice(seq("'", optional(alias(/[^']+/, $.attribute_value)), "'"), seq('"', optional(alias(/[^"]+/, $.attribute_value)), '"')),
 
-    text: _ => /[^<>&\s]([^<>&]*[^<>&\s])?/,
+    text: (_) => /[^<>&\s]([^<>&]*[^<>&\s])?/,
   },
 });

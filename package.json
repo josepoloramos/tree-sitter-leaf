@@ -1,23 +1,13 @@
 {
-  "name": "tree-sitter-html",
+  "name": "tree-sitter-leaf",
   "version": "0.23.2",
-  "description": "HTML grammar for tree-sitter",
-  "repository": "https://github.com/tree-sitter/tree-sitter-html",
+  "description": "Leaf grammar for tree-sitter",
+  "repository": "https://github.com/jpoloram/tree-sitter-leaf",
   "license": "MIT",
   "author": {
-    "name": "Max Brunsfeld",
-    "email": "maxbrunsfeld@gmail.com"
+    "name": "Jose Polo Ramos",
+    "email": "jose.poloramos@gmail.com"
   },
-  "contributors": [
-    {
-      "name": "Ashi Krishnan",
-      "email": "queerviolet@github.com"
-    },
-    {
-      "name": "Amaan Qureshi",
-      "email": "amaanq12@gmail.com"
-    }
-  ],
   "maintainers": [
     {
       "name": "Amaan Qureshi",
@@ -43,6 +33,7 @@
     "*.wasm"
   ],
   "dependencies": {
+    "generate": "^0.14.0",
     "node-addon-api": "^8.2.2",
     "node-gyp-build": "^4.8.2"
   },

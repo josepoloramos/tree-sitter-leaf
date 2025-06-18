@@ -1,6 +1,6 @@
 {
   "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/grammar.schema.json",
-  "name": "html",
+  "name": "leaf",
   "rules": {
     "document": {
       "type": "REPEAT",
@@ -32,6 +32,84 @@
         {
           "type": "STRING",
           "value": ">"
+        }
+      ]
+    },
+    "leaf_expression": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "#("
+        },
+        {
+          "type": "PATTERN",
+          "value": "[^)]+"
+        },
+        {
+          "type": "STRING",
+          "value": ")"
+        }
+      ]
+    },
+    "leaf_control": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "#"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "if"
+                },
+                {
+                  "type": "PATTERN",
+                  "value": "[^\\n]+"
+                }
+              ]
+            },
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "for"
+                },
+                {
+                  "type": "PATTERN",
+                  "value": "[^\\n]+"
+                }
+              ]
+            },
+            {
+              "type": "STRING",
+              "value": "else"
+            },
+            {
+              "type": "STRING",
+              "value": "end"
+            },
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "embed"
+                },
+                {
+                  "type": "PATTERN",
+                  "value": "\\([^)]+\\)"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -69,6 +147,14 @@
         {
           "type": "SYMBOL",
           "name": "erroneous_end_tag"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "leaf_expression"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "leaf_control"
         }
       ]
     },
@@ -497,5 +583,6 @@
     }
   ],
   "inline": [],
-  "supertypes": []
+  "supertypes": [],
+  "reserved": {}
 }

@@ -11,3 +11,6 @@
   "</"
   "/>"
 ] @punctuation.bracket
+
+(leaf_expression) @keyword
+(leaf_control) @keyword
